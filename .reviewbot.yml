@@ -1,0 +1,40 @@
+# ReviewBot self-review config (dogfooding)
+
+provider: "gemini"
+model: "gemini-2.0-flash"
+temperature: 0.1
+maxTokens: 4096
+
+include:
+  - "src/**/*.ts"
+
+exclude:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/*.test.ts"
+  - "**/fixtures/**"
+
+reviewCategories:
+  - bug
+  - security
+  - type_safety
+  - error_handling
+  - best_practice
+
+severityThreshold: "info"
+maxFindings: 15
+maxConcurrency: 3
+
+summaryComment: true
+inlineComments: true
+reviewEvent: "COMMENT"
+
+customInstructions: |
+  This is a GitHub Action written in TypeScript.
+  Key rules to enforce:
+  - No default exports
+  - No console.log (use @actions/core)
+  - All errors must be ReviewBotError subclasses
+  - All external calls must use withRetry()
+  - All data must be validated with Zod schemas
+  - AI provider must go through AIProvider interface

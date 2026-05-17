@@ -1,0 +1,51 @@
+name: "ReviewBot AI Code Review"
+description: "AI-powered code review on every PR — $0 with Gemini free tier"
+author: "reviewbot"
+
+branding:
+  icon: "eye"
+  color: "purple"
+
+inputs:
+  ai-api-key:
+    description: "API key for your AI provider (Gemini free / Anthropic / OpenAI)"
+    required: true
+  github-token:
+    description: "GitHub token with PR read/write permissions"
+    required: true
+    default: ${{ github.token }}
+  provider:
+    description: "AI provider: gemini (free, default) | anthropic | openai"
+    required: false
+    default: "gemini"
+  model:
+    description: "Model ID (provider-specific). Default: gemini-2.0-flash"
+    required: false
+  severity-threshold:
+    description: "Minimum severity (info|warning|error)"
+    required: false
+  max-findings:
+    description: "Maximum findings per review"
+    required: false
+  config-path:
+    description: "Path to .reviewbot.yml config file"
+    required: false
+    default: ".reviewbot.yml"
+
+outputs:
+  findings-count:
+    description: "Total number of findings posted"
+  review-id:
+    description: "GitHub review ID"
+  risk-level:
+    description: "Overall risk assessment (low|medium|high|critical)"
+  duration-ms:
+    description: "Total execution time in milliseconds"
+  tokens-used:
+    description: "Total AI tokens consumed"
+  estimated-cost:
+    description: "Estimated API cost ($0.00 for Gemini free tier)"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
