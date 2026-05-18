@@ -5,6 +5,7 @@ import { ReviewResponseSchema } from "./schemas";
 import { logger } from "../utils/logger";
 import { AIError } from "../errors";
 import { ErrorCode } from "../types";
+import { withRetry } from "../utils/retry";
 
 export interface ReviewResult {
   findings: ReviewFinding[];
@@ -45,7 +46,10 @@ export async function reviewChunks(
   };
 
   // Implement simple concurrency pool
-  const concurrency = Math.min(config.maxConcurrency, chunks.length);
+  // Gemini free tier is highly sensitive to concurrent requests, so serialize requests (concurrency=1) for gemini free provider
+  const isGeminiFree = provider.name === "gemini";
+  const maxConcurrency = isGeminiFree ? 1 : config.maxConcurrency;
+  const concurrency = Math.min(maxConcurrency, chunks.length);
   const queue = [...chunks];
   
   logger.info(`Starting AI review on ${chunks.length} chunks with concurrency=${concurrency}...`);
@@ -63,12 +67,20 @@ export async function reviewChunks(
         const userPrompt = createUserPrompt(chunk.file, chunk.language, hunksText, config.customInstructions);
         
         logger.info(`Sending chunk ${chunk.id} to AI provider (${chunk.estimatedTokens} estimated tokens)...`);
-        const response = await provider.review({
-          systemPrompt: SYSTEM_PROMPT,
-          userPrompt,
-          maxTokens: config.maxTokens,
-          temperature: config.temperature,
-        });
+        const response = await withRetry(
+          () =>
+            provider.review({
+              systemPrompt: SYSTEM_PROMPT,
+              userPrompt,
+              maxTokens: config.maxTokens,
+              temperature: config.temperature,
+            }),
+          {
+            maxAttempts: 5,
+            baseDelayMs: 5000,
+            maxDelayMs: 60000,
+          }
+        );
 
         totalTokens += response.usage.inputTokens + response.usage.outputTokens;
 
