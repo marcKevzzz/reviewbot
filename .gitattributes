@@ -1,0 +1,2 @@
+# Standardize line endings for release bundles to prevent cross-platform CI diff issues
+dist/index.js text eol=lf
