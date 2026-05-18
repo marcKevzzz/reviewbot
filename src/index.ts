@@ -18,7 +18,18 @@ export async function run(): Promise<void> {
     logger.info("Initializing ReviewBot action...");
 
     const githubToken = core.getInput("github-token", { required: true });
-    const aiApiKey = core.getInput("ai-api-key", { required: true });
+    const aiApiKey = core.getInput("ai-api-key", { required: false });
+
+    if (!aiApiKey) {
+      core.warning(
+        "⚠️ 'ai-api-key' input is missing or empty. Skipping AI code review. " +
+        "This is common on PRs from automated systems like Dependabot or forks where repository secrets are not exposed for security."
+      );
+      core.setOutput("findings-count", 0);
+      core.setOutput("risk-level", "low");
+      core.setOutput("duration-ms", Date.now() - startTime);
+      return;
+    }
 
     // Parse repository coordinates
     const repository = process.env.GITHUB_REPOSITORY;

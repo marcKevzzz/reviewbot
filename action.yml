@@ -9,7 +9,7 @@ branding:
 inputs:
   ai-api-key:
     description: "API key for your AI provider (Gemini free / Anthropic / OpenAI)"
-    required: true
+    required: false
   github-token:
     description: "GitHub token with PR read/write permissions"
     required: true
