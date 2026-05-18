@@ -44,14 +44,61 @@ export class GeminiProvider implements AIProvider {
                     description: { type: SchemaType.STRING },
                     suggestion: { type: SchemaType.STRING },
                     confidence: { type: SchemaType.NUMBER },
+                    usefulness: { type: SchemaType.INTEGER },
                   },
-                  required: ["file", "line", "severity", "category", "title", "description", "confidence"],
+                  required: ["file", "line", "severity", "category", "title", "description", "confidence", "usefulness"],
                 },
               },
               summary: { type: SchemaType.STRING },
               overallRisk: { type: SchemaType.STRING },
+              rubricEvaluation: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  security: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      justification: { type: SchemaType.STRING },
+                      score: { type: SchemaType.INTEGER },
+                    },
+                    required: ["justification", "score"],
+                  },
+                  performance: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      justification: { type: SchemaType.STRING },
+                      score: { type: SchemaType.INTEGER },
+                    },
+                    required: ["justification", "score"],
+                  },
+                  typeSafety: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      justification: { type: SchemaType.STRING },
+                      score: { type: SchemaType.INTEGER },
+                    },
+                    required: ["justification", "score"],
+                  },
+                  style: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      justification: { type: SchemaType.STRING },
+                      score: { type: SchemaType.INTEGER },
+                    },
+                    required: ["justification", "score"],
+                  },
+                  complexity: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      justification: { type: SchemaType.STRING },
+                      score: { type: SchemaType.INTEGER },
+                    },
+                    required: ["justification", "score"],
+                  },
+                },
+                required: ["security", "performance", "typeSafety", "style", "complexity"],
+              },
             },
-            required: ["findings", "summary", "overallRisk"],
+            required: ["findings", "summary", "overallRisk", "rubricEvaluation"],
           },
         },
       });
@@ -66,6 +113,7 @@ export class GeminiProvider implements AIProvider {
         findings: parsed.findings || [],
         summary: parsed.summary || "",
         overallRisk: parsed.overallRisk || "low",
+        rubricEvaluation: parsed.rubricEvaluation,
         usage: {
           inputTokens: response.response.usageMetadata?.promptTokenCount || 0,
           outputTokens: response.response.usageMetadata?.candidatesTokenCount || 0,

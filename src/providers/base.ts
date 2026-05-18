@@ -18,6 +18,7 @@ export interface AIReviewResponse {
   findings: any[];
   summary: string;
   overallRisk: "low" | "medium" | "high" | "critical";
+  rubricEvaluation?: any;
   usage: { inputTokens: number; outputTokens: number };
 }
 
