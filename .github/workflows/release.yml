@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    tags: ["v*"]
+    tags: ["v[0-9]*.[0-9]*.[0-9]*"]
 
 permissions:
   contents: write
@@ -39,4 +39,5 @@ jobs:
           TAG=${GITHUB_REF#refs/tags/}
           MAJOR=$(echo $TAG | cut -d. -f1)
           git tag -f $MAJOR
-          git push -f origin $MAJOR
+          git push origin :refs/tags/$MAJOR || true
+          git push origin $MAJOR
