@@ -13,6 +13,7 @@ export interface ReviewResult {
   tokensUsed: number;
   rubricScores?: RubricEvaluation;
   mergabilityGrade?: string;
+  errors?: string[];
 }
 
 // Helper to check if a line was actually added or modified in the hunks
@@ -34,6 +35,7 @@ export async function reviewChunks(
 ): Promise<ReviewResult> {
   const findings: ReviewFinding[] = [];
   const summaries: string[] = [];
+  const errors: string[] = [];
   let totalTokens = 0;
 
   // Track rubric evaluations for aggregation
@@ -161,7 +163,9 @@ export async function reviewChunks(
           });
         }
       } catch (err) {
-        logger.error(`Failed to review chunk ${chunk.id}: ${err instanceof Error ? err.message : String(err)}`);
+        const errMsg = err instanceof Error ? err.message : String(err);
+        logger.error(`Failed to review chunk ${chunk.id}: ${errMsg}`);
+        errors.push(errMsg);
       }
     }
   };
@@ -227,5 +231,6 @@ export async function reviewChunks(
     tokensUsed: totalTokens,
     rubricScores,
     mergabilityGrade,
+    errors,
   };
 }

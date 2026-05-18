@@ -125,6 +125,7 @@ export async function run(): Promise<void> {
       tokensUsed: review.tokensUsed,
       durationMs,
       estimatedCost: 0,
+      errors: review.errors || [],
     };
 
     // 5. Publisher Summary Formatting

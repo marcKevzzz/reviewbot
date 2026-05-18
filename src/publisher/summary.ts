@@ -4,7 +4,7 @@ import { ReviewBotConfig } from "../config/schema";
 export function generateSummaryBody(
   findings: ReviewFinding[],
   summaries: string[],
-  stats: Omit<ReviewStats, "durationMs"> & { durationMs: number; rubricScores?: RubricEvaluation; mergabilityGrade?: string },
+  stats: Omit<ReviewStats, "durationMs"> & { durationMs: number; rubricScores?: RubricEvaluation; mergabilityGrade?: string; errors?: string[] },
   config: ReviewBotConfig
 ): string {
   const severityEmoji: Record<Severity, string> = {
@@ -44,9 +44,20 @@ export function generateSummaryBody(
     ? "⚠️ **Minor Concerns**: Style nits or minor best-practice warnings were found. Review changes before merging."
     : "✅ **Mergability Safe**: Code meets or exceeds all quality, performance, and security thresholds.";
 
-  let body = `## ${gradeColor} ReviewBot Code Quality Report
+  let body = `## ${gradeColor} ReviewBot Code Quality Report\n\n`;
 
-> [!${alertType}]
+  if (stats.errors && stats.errors.length > 0) {
+    body += `> [!WARNING]\n`;
+    body += `> ⚠️ **Incomplete Review: AI Service Limits Exceeded**\n`;
+    body += `> Some code chunks were skipped because the AI API returned quota or rate limit errors. Please check your AI provider billing or daily free tier limits!\n`;
+    body += `> **Error logs:**\n`;
+    for (const err of stats.errors) {
+      body += `> *   \`${err.replace(/\n/g, " ")}\`\n`;
+    }
+    body += `\n`;
+  }
+
+  body += `> [!${alertType}]
 > **Pull Request Grade**: **${grade}**
 > ${alertDescription}
 
