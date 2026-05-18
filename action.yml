@@ -31,6 +31,10 @@ inputs:
     description: "Path to .reviewbot.yml config file"
     required: false
     default: ".reviewbot.yml"
+  enable-nitpick-filter:
+    description: "Enable or disable filtering out level-1 styling/spacing nitpicks. Default: true"
+    required: false
+    default: "true"
 
 outputs:
   findings-count:

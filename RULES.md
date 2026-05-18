@@ -158,3 +158,14 @@ Major aliases: v1, v2, ...
 **Optional paid provider deps (install only if needed):**
 - `@anthropic-ai/sdk` — Claude API (paid)
 - `openai` — OpenAI API (paid)
+
+## 11. Project State & Change Logging
+
+1. **Every implemented change must be recorded.** Log all feature additions, fixes, and optimizations with dates.
+2. **Track changes in `projectstate/changes.md`.** All modification records live inside this file inside the `projectstate/` directory.
+3. **Always append chronologically.** Keep logs up to date with exact details of file modifications and infrastructure improvements.
+
+## 12. Database Migrations & Queries
+
+1. **No embedded schema mutations.** Any database changes must be represented by standalone migration files (e.g., in a `migrations/` directory).
+2. **No copy-paste terminal queries.** If database query execution is required, write it inside a separate `.sql` or runnable script file rather than asking the user to manually enter raw query parameters.

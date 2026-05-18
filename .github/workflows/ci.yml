@@ -1,38 +1,45 @@
-name: CI
+name: CI Quality Gate
+
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  lint-test-build:
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+          cache: "pnpm"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type-check
-        run: pnpm lint
+      - name: Lint and Type Check
+        run: pnpm run lint
 
-      - name: Unit tests
-        run: pnpm test -- --run --coverage
+      - name: Run Unit Tests
+        run: pnpm exec vitest run
 
-      - name: Build
-        run: pnpm build
-
-      - name: Verify dist is fresh
+      - name: Verify Build Integrity
         run: |
-          git diff --exit-code dist/ || \
-            (echo "::error::dist/ is outdated. Run 'pnpm build' and commit." && exit 1)
+          pnpm run build
+          if [ -n "$(git status --porcelain dist/)" ]; then
+            echo "❌ The production bundle in 'dist/' is out of sync with the source files in 'src/'."
+            echo "Please run 'pnpm run build' locally and commit the modified bundle."
+            git diff dist/
+            exit 1
+          fi
+          echo "✅ Production bundle is fully synchronized and up to date!"

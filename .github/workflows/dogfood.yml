@@ -1,23 +1,47 @@
-name: Dogfood
+name: Dogfood Code Review
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches: [main]
 
-permissions:
-  contents: read
-  pull-requests: write
+# Ensure only one dogfood workflow runs concurrently per PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  review:
+  reviewbot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Required to post comments on pull requests
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: ReviewBot Self-Review
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Production Bundle
+        run: pnpm run build
+
+      - name: Run ReviewBot Self-Review
         uses: ./
         with:
           ai-api-key: ${{ secrets.GEMINI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           provider: "gemini"
           severity-threshold: "info"
-          max-findings: "15"
+          enable-nitpick-filter: "true"
