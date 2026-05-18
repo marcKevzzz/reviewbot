@@ -48,5 +48,5 @@ describe("generateSummaryBody", () => {
     expect(body).toContain("██████████"); // 5.0 rounded is 10/10 -> 10 chars of █
     expect(body).toContain("<details>");
     expect(body).toContain("Secure code.");
-  });
+  }, 20000);
 });

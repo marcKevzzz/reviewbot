@@ -18,7 +18,7 @@ export async function run(): Promise<void> {
     logger.info("Initializing ReviewBot action...");
 
     const githubToken = core.getInput("github-token", { required: true });
-    const geminiApiKey = core.getInput("gemini-api-key", { required: true });
+    const aiApiKey = core.getInput("ai-api-key", { required: true });
 
     // Parse repository coordinates
     const repository = process.env.GITHUB_REPOSITORY;
@@ -47,7 +47,7 @@ export async function run(): Promise<void> {
 
     // Load Configurations & Engine dependencies
     const config = loadConfig();
-    const provider = createProvider(config.provider, geminiApiKey);
+    const provider = createProvider(config.provider, aiApiKey);
     const octokit = new Octokit({ auth: githubToken });
 
     const ctx: ActionContext = {
