@@ -3,7 +3,7 @@ name: Dogfood Code Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
+    branches: [master]
 
 # Ensure only one dogfood workflow runs concurrently per PR
 concurrency:

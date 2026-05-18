@@ -26,7 +26,7 @@ This file tracks all modifications made to ReviewBot, ordered chronologically wi
 *   **Initial Deployment & Metadata Configurations**:
     *   Updated `action.yml` metadata with `enable-nitpick-filter` input configurations.
     *   Updated `loader.ts` to cleanly extract and parse `enable-nitpick-filter` from GitHub Actions runtime inputs.
-    *   Created a PR self-review "Dogfooding" pipeline in `.github/workflows/dogfood.yml` to trigger ReviewBot on its own pull requests for ultimate quality assurance.
+    *   Created a PR self-review "Dogfooding" pipeline in `.github/workflows/dogfood.yml` (configured to target the default `master` branch) to trigger ReviewBot on its own pull requests for ultimate quality assurance.
 
 ---
 
