@@ -5,6 +5,12 @@ This file tracks all modifications made to ReviewBot, ordered chronologically wi
 ---
 
 ### May 18, 2026
+*   **Infrastructure: Node.js 24 Runtime & Cross-Platform Integrity Upgrades (v0.2.0)**:
+    *   Upgraded the action execution environment inside `action.yml` from `node20` to `node24` to eliminate runner deprecation warnings.
+    *   Configured node-versions inside all runner workflows (`ci.yml`, `dogfood.yml`, `release.yml`) to Node `24`.
+    *   Added `.gitattributes` to lock `dist/index.js` to `eol=lf` to resolve cross-platform CRLF/LF line-ending mismatches.
+    *   Updated `package.json` to standardise compilation on minified builds (`-m`), reducing bundle size by 50% (from 1.5MB to 821KB) and completely stripping Webpack concat path comments.
+    *   Created a code review verification playground `src/utils/unsafe-storage.ts` containing realistic code smells (plaintext secrets, unsafe `Math.random()` session tokens, synchronous event loop blocks) to generate rich, interactive AI feedback.
 *   **Feature: Phase 2 Quality Scorecard & Anti-Spam (v0.2.0)**:
     *   Updated `types.ts` to add rating tier `usefulness` (1 to 3) for findings, `RubricScore`, and `RubricEvaluation` types.
     *   Upgraded `schema.ts` and `defaults.ts` to include `.reviewbot.yml` settings for `enableNitpickFilter` and weight configurations `rubricWeights`.

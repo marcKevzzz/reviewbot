@@ -51,5 +51,5 @@ outputs:
     description: "Estimated API cost ($0.00 for Gemini free tier)"
 
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index.js"
