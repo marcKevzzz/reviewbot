@@ -110,6 +110,7 @@ export interface ReviewFinding {
 export interface ActionContext {
   octokit: InstanceType<typeof Octokit>;
   aiProvider: AIProvider;
+  aiFallbackProvider?: AIProvider;
   owner: string;
   repo: string;
   pullNumber: number;

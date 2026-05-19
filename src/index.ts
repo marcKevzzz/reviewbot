@@ -19,6 +19,9 @@ export async function run(): Promise<void> {
 
     const githubToken = core.getInput("github-token", { required: true });
     const aiApiKey = core.getInput("ai-api-key", { required: false });
+    const aiFallbackKey = core.getInput("ai-fallback-key", { required: false }) ||
+      process.env.GROQ_API_KEY ||
+      process.env.OPENAI_API_KEY;
 
     if (!aiApiKey) {
       core.warning(
@@ -62,11 +65,26 @@ export async function run(): Promise<void> {
       model: config.model,
       baseUrl: config.openaiBaseUrl,
     });
+
+    let fallbackProvider;
+    if (aiFallbackKey) {
+      const fallbackProviderType = (core.getInput("fallback-provider", { required: false }) || "openai") as any;
+      const fallbackModel = core.getInput("fallback-model", { required: false }) || "llama-3.3-70b-versatile";
+      const fallbackBaseUrl = core.getInput("fallback-base-url", { required: false }) || "https://api.groq.com/openai/v1";
+
+      fallbackProvider = createProvider(fallbackProviderType, aiFallbackKey, {
+        model: fallbackModel,
+        baseUrl: fallbackBaseUrl,
+      });
+      logger.info(`Fallback AI Provider configured: ${fallbackProviderType} using model ${fallbackModel}`);
+    }
+
     const octokit = new Octokit({ auth: githubToken });
 
     const ctx: ActionContext = {
       octokit,
       aiProvider: provider,
+      aiFallbackProvider: fallbackProvider,
       owner,
       repo,
       pullNumber,
@@ -93,7 +111,7 @@ export async function run(): Promise<void> {
     }
 
     // 3. AI Execution
-    const review = await reviewChunks(chunks, config, provider);
+    const review = await reviewChunks(chunks, config, ctx);
 
     // 4. Report Metric Compilation
     const bySeverity: Record<Severity, number> = {
