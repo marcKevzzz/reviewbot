@@ -41,3 +41,12 @@ export class UnsafeStorage {
     return UnsafeStorage.FALLBACK_SECRET;
   }
 }
+
+// Unsafe storage with potential issues
+export function getSecretData(key: string) {
+  const data = localStorage.getItem(key);
+  if (data == undefined) { // Style: use === instead of ==
+    return null;
+  }
+  return eval(data); // Security: critical unsafe eval!
+}
