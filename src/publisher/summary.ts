@@ -47,14 +47,28 @@ export function generateSummaryBody(
   let body = `## ${gradeColor} ReviewBot Code Quality Report\n\n`;
 
   if (stats.errors && stats.errors.length > 0) {
-    body += `> [!WARNING]\n`;
-    body += `> ⚠️ **Incomplete Review: AI Service Limits Exceeded**\n`;
-    body += `> Some code chunks were skipped because the AI API returned quota or rate limit errors. Please check your AI provider billing or daily free tier limits!\n`;
-    body += `> **Error logs:**\n`;
-    for (const err of stats.errors) {
-      body += `> *   \`${err.replace(/\n/g, " ")}\`\n`;
+    const hasFailover = stats.errors.some(err => err.includes("failed over to fallback provider"));
+    const fatalErrors = stats.errors.filter(err => !err.includes("failed over to fallback provider"));
+
+    if (hasFailover && fatalErrors.length === 0) {
+      body += `> [!NOTE]\n`;
+      body += `> ℹ️ **Seamless Backup Failover Activated**\n`;
+      body += `> Primary AI provider exhausted free tier quota. ReviewBot automatically and successfully hot-swapped to your configured backup provider to complete 100% of the code review.\n`;
+      body += `> **Details:**\n`;
+      for (const err of stats.errors) {
+        body += `> *   \`${err.replace(/\n/g, " ")}\`\n`;
+      }
+      body += `\n`;
+    } else {
+      body += `> [!WARNING]\n`;
+      body += `> ⚠️ **Incomplete Review: AI Service Limits Exceeded**\n`;
+      body += `> Some code chunks were skipped because the AI API returned quota or rate limit errors. Please check your AI provider billing or daily free tier limits!\n`;
+      body += `> **Error logs:**\n`;
+      for (const err of stats.errors) {
+        body += `> *   \`${err.replace(/\n/g, " ")}\`\n`;
+      }
+      body += `\n`;
     }
-    body += `\n`;
   }
 
   body += `> [!${alertType}]
