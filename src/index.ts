@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as core from "@actions/core";
 import { Octokit } from "@octokit/rest";
 import { loadConfig } from "./config/loader";
-import { createProvider } from "./providers/gemini";
+import { createProvider } from "./providers";
 import { fetchDiff } from "./diff/fetcher";
 import { filterAndParseDiff } from "./diff/filter";
 import { chunkDiff } from "./review/chunker";
@@ -58,7 +58,10 @@ export async function run(): Promise<void> {
 
     // Load Configurations & Engine dependencies
     const config = loadConfig();
-    const provider = createProvider(config.provider, aiApiKey);
+    const provider = createProvider(config.provider, aiApiKey, {
+      model: config.model,
+      baseUrl: config.openaiBaseUrl,
+    });
     const octokit = new Octokit({ auth: githubToken });
 
     const ctx: ActionContext = {

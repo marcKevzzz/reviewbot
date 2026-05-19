@@ -43,6 +43,7 @@ export const ConfigSchema = z.object({
 
   customInstructions: z.string().optional(),
   languageHints: z.record(z.string(), z.string()).optional(),
+  openaiBaseUrl: z.string().url().optional(),
 });
 
 export type ReviewBotConfig = z.infer<typeof ConfigSchema>;
