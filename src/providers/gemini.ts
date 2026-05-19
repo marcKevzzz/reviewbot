@@ -140,12 +140,3 @@ export class GeminiProvider implements AIProvider {
     };
   }
 }
-
-export function createProvider(type: AIProviderType, apiKey: string): AIProvider {
-  switch (type) {
-    case AIProviderType.GEMINI:
-      return new GeminiProvider(apiKey);
-    default:
-      throw new AIError(`Unsupported AI Provider Type: ${type}`, ErrorCode.CONFIG_INVALID);
-  }
-}
