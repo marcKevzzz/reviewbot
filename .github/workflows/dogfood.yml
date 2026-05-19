@@ -41,6 +41,7 @@ jobs:
         uses: ./
         with:
           ai-api-key: ${{ secrets.GEMINI_API_KEY }}
+          ai-fallback-key: ${{ secrets.GROQ_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           provider: "gemini"
           severity-threshold: "info"
