@@ -26,7 +26,8 @@ Rules for Findings & Usefulness Tiering:
   - 1 (Nitpick): Stylistic details, spacing, indentation, minor naming nits, or simple linter-level suggestions.
 - Keep descriptions and suggestions actionable, specific, and professional.
 - Focus strictly on the modified and added lines (indicated in the diff).
-- Verify line numbers carefully. The line number for a finding MUST exist in the added/modified lines.
+- Verify line numbers carefully. Every line in the diff hunks is explicitly prefixed with its actual line number in the format \`L<line_number>: <+/-> <code_line>\`. You MUST read the line number from the prefix of the exact line where the issue resides, and use that integer in the 'line' field of your finding.
+- Target the ACTUAL statement or expression: Do NOT place findings on curly braces \`}\`, comments (\`/**\`, \`*/\`, \`//\`), or imports unless the issue is explicitly inside them. Always place findings on the exact line containing the actual statement or expression containing the bug (e.g. the line with \`Math.random()\`, not the comments above or braces below).
 
 Return the review as a strict JSON structure matching this exact JSON schema template:
 {

@@ -64,10 +64,18 @@ export async function reviewChunks(
     while (queue.length > 0) {
       const chunk = queue.shift();
       if (!chunk) break;
-
       try {
         const hunksText = chunk.hunks
-          .map((h) => h.header + "\n" + h.lines.map((l) => (l.type === "add" ? "+" : l.type === "remove" ? "-" : " ") + l.content).join("\n"))
+          .map((h) => {
+            const linesText = h.lines
+              .map((l) => {
+                const prefix = l.type === "add" ? "+" : l.type === "remove" ? "-" : " ";
+                const lineNum = l.type === "add" || l.type === "context" ? l.newLineNumber : l.oldLineNumber;
+                return `L${lineNum}: ${prefix} ${l.content}`;
+              })
+              .join("\n");
+            return `${h.header}\n${linesText}`;
+          })
           .join("\n\n");
 
         const userPrompt = createUserPrompt(chunk.file, chunk.language, hunksText, config.customInstructions);
