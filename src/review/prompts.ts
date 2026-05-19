@@ -28,7 +28,33 @@ Rules for Findings & Usefulness Tiering:
 - Focus strictly on the modified and added lines (indicated in the diff).
 - Verify line numbers carefully. The line number for a finding MUST exist in the added/modified lines.
 
-Return the review as a strict JSON structure matching the schema.`;
+Return the review as a strict JSON structure matching this exact JSON schema template:
+{
+  "findings": [
+    {
+      "file": "string (the exact file path being reviewed)",
+      "line": 10, (the exact positive integer line number in the diff where the finding occurred)
+      "severity": "info" | "warning" | "error",
+      "category": "bug" | "security" | "performance" | "style" | "complexity" | "best_practice" | "type_safety" | "error_handling",
+      "title": "string (short 2-5 word summary under 100 chars)",
+      "description": "string (actionable critique detail)",
+      "suggestion": "string (optional concrete code fix/diff suggestion)",
+      "confidence": 0.9, (float between 0.0 and 1.0)
+      "usefulness": 1 | 2 | 3 (1 = Nitpick, 2 = Normal/Best Practice, 3 = Critical/Bug)
+    }
+  ],
+  "summary": "string (overall brief summary of this file changes under 2000 chars)",
+  "overallRisk": "low" | "medium" | "high" | "critical",
+  "rubricEvaluation": {
+    "security": { "justification": "evidence-based justification text", "score": 5 },
+    "performance": { "justification": "evidence-based justification text", "score": 5 },
+    "typeSafety": { "justification": "evidence-based justification text", "score": 5 },
+    "style": { "justification": "evidence-based justification text", "score": 5 },
+    "complexity": { "justification": "evidence-based justification text", "score": 5 }
+  }
+}
+
+Do NOT wrap the JSON response in markdown code blocks or add any text outside of the raw JSON object.`;
 
 export function createUserPrompt(
   file: string,
