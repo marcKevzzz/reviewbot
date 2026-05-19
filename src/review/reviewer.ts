@@ -31,12 +31,16 @@ function isLineAddedInHunks(lineNum: number, hunks: DiffHunk[]): boolean {
 export async function reviewChunks(
   chunks: ReviewChunk[],
   config: ReviewBotConfig,
-  provider: import("../providers/base").AIProvider
+  ctx: ActionContext | import("../providers/base").AIProvider
 ): Promise<ReviewResult> {
   const findings: ReviewFinding[] = [];
   const summaries: string[] = [];
   const errors: string[] = [];
   let totalTokens = 0;
+
+  const currentProvider = (ctx as any).aiProvider || ctx;
+  let activeProvider = currentProvider;
+  let isFallbackActive = false;
 
   // Track rubric evaluations for aggregation
   const rubricCollections = {
@@ -49,7 +53,7 @@ export async function reviewChunks(
 
   // Implement simple concurrency pool
   // Gemini free tier is highly sensitive to concurrent requests, so serialize requests (concurrency=1) for gemini free provider
-  const isGeminiFree = provider.name === "gemini";
+  const isGeminiFree = currentProvider.name === "gemini";
   const maxConcurrency = isGeminiFree ? 1 : config.maxConcurrency;
   const concurrency = Math.min(maxConcurrency, chunks.length);
   const queue = [...chunks];
@@ -68,21 +72,62 @@ export async function reviewChunks(
 
         const userPrompt = createUserPrompt(chunk.file, chunk.language, hunksText, config.customInstructions);
         
-        logger.info(`Sending chunk ${chunk.id} to AI provider (${chunk.estimatedTokens} estimated tokens)...`);
-        const response = await withRetry(
-          () =>
-            provider.review({
-              systemPrompt: SYSTEM_PROMPT,
-              userPrompt,
-              maxTokens: config.maxTokens,
-              temperature: config.temperature,
-            }),
-          {
-            maxAttempts: 5,
-            baseDelayMs: 5000,
-            maxDelayMs: 60000,
+        logger.info(`Sending chunk ${chunk.id} to AI provider (${activeProvider.name}, ${chunk.estimatedTokens} estimated tokens)...`);
+        
+        let response: import("../providers/base").AIReviewResponse;
+        try {
+          response = await withRetry(
+            () =>
+              activeProvider.review({
+                systemPrompt: SYSTEM_PROMPT,
+                userPrompt,
+                maxTokens: config.maxTokens,
+                temperature: config.temperature,
+              }),
+            {
+              maxAttempts: 3,
+              baseDelayMs: 4000,
+              maxDelayMs: 30000,
+            }
+          );
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          const fallbackProvider = (ctx as any).aiFallbackProvider;
+          if (
+            (errMsg.includes("429") || errMsg.toLowerCase().includes("quota") || errMsg.includes("rate_limit")) &&
+            fallbackProvider &&
+            !isFallbackActive
+          ) {
+            logger.warning(
+              `⚠️ Primary provider (${activeProvider.name}) rate-limited or exhausted quota: ${errMsg}. ` +
+              `Seamlessly failing over to backup provider: ${fallbackProvider.name}...`
+            );
+            isFallbackActive = true;
+            activeProvider = fallbackProvider;
+            
+            errors.push(
+              `Primary provider (${(ctx as any).aiProvider?.name || "Gemini"}) exhausted. Automatically failed over to fallback provider (${fallbackProvider.name}).`
+            );
+
+            logger.info(`Retrying chunk ${chunk.id} with backup provider (${activeProvider.name})...`);
+            response = await withRetry(
+              () =>
+                activeProvider.review({
+                  systemPrompt: SYSTEM_PROMPT,
+                  userPrompt,
+                  maxTokens: config.maxTokens,
+                  temperature: config.temperature,
+                }),
+              {
+                maxAttempts: 3,
+                baseDelayMs: 3000,
+                maxDelayMs: 20000,
+              }
+            );
+          } else {
+            throw err;
           }
-        );
+        }
 
         totalTokens += response.usage.inputTokens + response.usage.outputTokens;
 

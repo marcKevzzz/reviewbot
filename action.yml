@@ -10,6 +10,21 @@ inputs:
   ai-api-key:
     description: "API key for your AI provider (Gemini free / Anthropic / OpenAI)"
     required: false
+  ai-fallback-key:
+    description: "Backup/fallback API key if primary provider quota is exhausted"
+    required: false
+  fallback-provider:
+    description: "Fallback AI provider: gemini | anthropic | openai"
+    required: false
+    default: "openai"
+  fallback-model:
+    description: "Fallback Model ID. Default: llama-3.3-70b-versatile"
+    required: false
+    default: "llama-3.3-70b-versatile"
+  fallback-base-url:
+    description: "Fallback OpenAI-compatible base URL. Default: https://api.groq.com/openai/v1 (Groq Free Tier)"
+    required: false
+    default: "https://api.groq.com/openai/v1"
   github-token:
     description: "GitHub token with PR read/write permissions"
     required: true
