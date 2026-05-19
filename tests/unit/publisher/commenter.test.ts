@@ -32,6 +32,7 @@ describe("publishComments", () => {
         description: "Bug description",
         suggestion: "Use const instead",
         confidence: 0.95,
+        usefulness: 3,
       },
     ];
 
