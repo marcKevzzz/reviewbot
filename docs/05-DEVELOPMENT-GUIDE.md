@@ -11,7 +11,7 @@
 ## 2. Quick Start
 
 ```bash
-git clone https://github.com/your-org/reviewbot.git
+git clone https://github.com/marcKevzzz/reviewbot.git
 cd reviewbot
 pnpm install
 cp .env.example .env

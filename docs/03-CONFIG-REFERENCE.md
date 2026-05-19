@@ -106,7 +106,7 @@ languageHints:
 
 ```yaml
 # .github/workflows/review.yml
-- uses: your-org/reviewbot@v1
+- uses: marcKevzzz/reviewbot@v0
   with:
     ai-api-key: ${{ secrets.GEMINI_API_KEY }}  # or ANTHROPIC/OPENAI key
     github-token: ${{ secrets.GITHUB_TOKEN }}
